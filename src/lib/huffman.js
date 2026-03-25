@@ -1,0 +1,288 @@
+function makeId(prefix, n) {
+  return `${prefix}_${n}`
+}
+
+export function printableChar(ch) {
+  if (ch === ' ') return '␠'
+  if (ch === '\n') return '␤'
+  if (ch === '\t') return '⇥'
+  return ch
+}
+
+function countFrequencies(text) {
+  const freq = {}
+  for (const ch of text) {
+    freq[ch] = (freq[ch] || 0) + 1
+  }
+  return freq
+}
+
+function sortedEntriesByFreq(freq) {
+  return Object.entries(freq).sort((a, b) => {
+    const df = a[1] - b[1]
+    if (df !== 0) return df
+    return a[0].localeCompare(b[0])
+  })
+}
+
+function stableQueueSort(nodes) {
+  return [...nodes].sort((a, b) => {
+    const df = a.freq - b.freq
+    if (df !== 0) return df
+    const aKey = a.char ?? a.id
+    const bKey = b.char ?? b.id
+    return String(aKey).localeCompare(String(bKey))
+  })
+}
+
+function cloneNodePublic(node) {
+  return {
+    id: node.id,
+    char: node.char ?? null,
+    freq: node.freq,
+    left: node.left ?? null,
+    right: node.right ?? null,
+  }
+}
+
+function snapshot(nodesById, queue, selectedIds, created, rootId, meta) {
+  const nodes = {}
+  for (const [id, n] of Object.entries(nodesById)) nodes[id] = cloneNodePublic(n)
+
+  return {
+    nodesById: nodes,
+    queue: stableQueueSort(queue).map((n) => ({
+      id: n.id,
+      char: n.char ?? null,
+      freq: n.freq,
+    })),
+    forestIds: stableQueueSort(queue).map((n) => n.id),
+    selectedIds: selectedIds ? [...selectedIds] : [],
+    created: created ? { ...created } : null,
+    rootId: rootId || null,
+    ...meta,
+  }
+}
+
+function buildCodes(nodesById, rootId) {
+  const codes = {}
+
+  if (!rootId) return codes
+
+  function dfs(nodeId, prefix) {
+    const node = nodesById[nodeId]
+    if (!node) return
+
+    const isLeaf = !node.left && !node.right
+    if (isLeaf) {
+      codes[node.char] = prefix || '0'
+      return
+    }
+    if (node.left) dfs(node.left, prefix + '0')
+    if (node.right) dfs(node.right, prefix + '1')
+  }
+
+  dfs(rootId, '')
+  return codes
+}
+
+function encodeText(text, codes) {
+  let out = ''
+  for (const ch of text) out += codes[ch] || ''
+  return out
+}
+
+export function summarizeBits(result) {
+  const n = result?.text?.length || 0
+  const unique = Object.keys(result?.frequencies || {}).length
+  const asciiBits = n * 8
+  const huffmanBits = (result?.encodedText || '').length
+  return { n, unique, asciiBits, huffmanBits }
+}
+
+/**
+ * Gera uma sequência de passos (steps) para animar o Huffman.
+ *
+ * Cada step contém tudo o que a UI precisa:
+ * - frequencies
+ * - queue (nós atuais ordenados)
+ * - selectedIds
+ * - created (nó pai recém-criado)
+ * - rootId (quando existir)
+ * - nodesById (para desenhar árvore)
+ * - title/description/kind (texto didático)
+ */
+export function buildHuffmanSteps(text) {
+  const steps = []
+  const safeText = String(text ?? '')
+
+  const frequencies = countFrequencies(safeText)
+  const freqEntries = sortedEntriesByFreq(frequencies)
+
+  const nodesById = {}
+  let idCounter = 1
+
+  const leaves = freqEntries.map(([ch, f]) => {
+    const id = makeId('leaf', idCounter++)
+    const node = { id, char: ch, freq: f, left: null, right: null }
+    nodesById[id] = node
+    return node
+  })
+
+  // Step 1: Frequências
+  steps.push(
+    snapshot(nodesById, leaves, [], null, null, {
+      kind: 'frequencies',
+      title: '1) Contar frequências',
+      description:
+        'Primeiro, contamos quantas vezes cada caractere aparece no texto. Isso vira o peso de cada folha.',
+      frequencies,
+      text: safeText,
+    }),
+  )
+
+  // Step 2: Fila inicial ordenada
+  let queue = stableQueueSort(leaves)
+  steps.push(
+    snapshot(nodesById, queue, [], null, null, {
+      kind: 'queue',
+      title: '2) Ordenar nós pela menor frequência',
+      description:
+        'Colocamos as folhas em uma fila de prioridade (menor frequência primeiro).',
+      frequencies,
+      text: safeText,
+    }),
+  )
+
+  // Caso especial: texto vazio
+  if (safeText.length === 0) {
+    steps.push({
+      kind: 'done',
+      title: 'Resultado',
+      description: 'Digite algum texto para visualizar o algoritmo.',
+      frequencies,
+      queue: [],
+      selectedIds: [],
+      created: null,
+      rootId: null,
+      nodesById: {},
+      result: { text: safeText, frequencies, codes: {}, encodedText: '' },
+    })
+    return { steps }
+  }
+
+  // Caso especial: apenas 1 símbolo
+  if (queue.length === 1) {
+    const root = queue[0]
+    const codes = { [root.char]: '0' }
+    const encodedText = encodeText(safeText, codes)
+    steps.push(
+      snapshot(nodesById, queue, [root.id], null, root.id, {
+        kind: 'single',
+        title: 'Caso especial: um único caractere',
+        description:
+          'Quando só existe um símbolo, a árvore tem apenas uma folha. Por convenção didática, usamos o código 0.',
+        frequencies,
+        text: safeText,
+        result: { text: safeText, frequencies, codes, encodedText, rootId: root.id },
+      }),
+    )
+    steps.push(
+      snapshot(nodesById, queue, [], null, root.id, {
+        kind: 'done',
+        title: 'Resultado final',
+        description: 'Códigos gerados e texto codificado.',
+        frequencies,
+        text: safeText,
+        result: { text: safeText, frequencies, codes, encodedText, rootId: root.id },
+      }),
+    )
+    return { steps }
+  }
+
+  // Loop principal de Huffman
+  while (queue.length > 1) {
+    queue = stableQueueSort(queue)
+    const a = queue[0]
+    const b = queue[1]
+
+    steps.push(
+      snapshot(nodesById, queue, [a.id, b.id], null, null, {
+        kind: 'pick',
+        title: '3) Selecionar os dois menores',
+        description:
+          'Escolhemos os dois nós de menor frequência. Eles serão combinados em um novo nó pai.',
+        frequencies,
+        text: safeText,
+      }),
+    )
+
+    const parentId = makeId('node', idCounter++)
+    const parent = {
+      id: parentId,
+      char: null,
+      freq: a.freq + b.freq,
+      left: a.id,
+      right: b.id,
+    }
+    nodesById[parentId] = parent
+
+    // remove 2 primeiros e adiciona pai
+    queue = queue.slice(2)
+    queue.push(parent)
+
+    steps.push(
+      snapshot(nodesById, queue, [], { id: parentId, left: a.id, right: b.id }, null, {
+        kind: 'merge',
+        title: '4) Combinar e criar um nó pai',
+        description:
+          'Criamos um nó interno cujo peso é a soma dos pesos dos dois nós escolhidos. Esse nó volta para a fila.',
+        frequencies,
+        text: safeText,
+      }),
+    )
+  }
+
+  const rootId = queue[0]?.id || null
+
+  steps.push(
+    snapshot(nodesById, queue, [], null, rootId, {
+      kind: 'tree',
+      title: '5) Árvore final pronta',
+      description:
+        'Repetimos até sobrar apenas um nó. Ele é a raiz da árvore binária de Huffman.',
+      frequencies,
+      text: safeText,
+    }),
+  )
+
+  const codes = buildCodes(nodesById, rootId)
+  const encodedText = encodeText(safeText, codes)
+
+  steps.push(
+    snapshot(nodesById, queue, [], null, rootId, {
+      kind: 'codes',
+      title: '6) Gerar códigos binários',
+      description:
+        'Percorremos a árvore: esquerda é 0, direita é 1. O caminho da raiz até cada folha vira o código do caractere.',
+      frequencies,
+      text: safeText,
+      result: { text: safeText, frequencies, codes, encodedText, rootId },
+    }),
+  )
+
+  steps.push(
+    snapshot(nodesById, queue, [], null, rootId, {
+      kind: 'done',
+      title: '7) Texto codificado',
+      description:
+        'Substituímos cada caractere pelo seu código e obtemos a sequência final de bits.',
+      frequencies,
+      text: safeText,
+      result: { text: safeText, frequencies, codes, encodedText, rootId },
+    }),
+  )
+
+  return { steps }
+}
+

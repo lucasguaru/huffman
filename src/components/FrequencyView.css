@@ -1,0 +1,38 @@
+.freqGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  gap: 10px;
+}
+
+.freqCard {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 10px 10px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  transition: transform 160ms ease, box-shadow 220ms ease;
+}
+
+.freqCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(15, 23, 42, 0.10);
+}
+
+.freqChar {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(18px 18px at 30% 30%, rgba(96, 165, 250, 0.28), transparent 65%),
+    rgba(37, 99, 235, 0.10);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  margin-bottom: 8px;
+  color: var(--slate);
+}
+
+.freqCount {
+  font-size: 13px;
+}
+
