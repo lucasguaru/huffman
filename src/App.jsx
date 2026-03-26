@@ -2,14 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { buildHuffmanSteps, printableChar, summarizeBits } from './lib/huffman.js'
 import ControlsPanel from './components/ControlsPanel.jsx'
 import StepInfo from './components/StepInfo.jsx'
-import FrequencyView from './components/FrequencyView.jsx'
 import QueueView from './components/QueueView.jsx'
 import TreeView from './components/TreeView.jsx'
 import CodesTable from './components/CodesTable.jsx'
 import EncodedResult from './components/EncodedResult.jsx'
 
 function App() {
-  const [text, setText] = useState('banana')
+  const [text, setText] = useState('abacate')
   const [steps, setSteps] = useState([])
   const [stepIndex, setStepIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -114,16 +113,6 @@ function App() {
 
           <div className="panelInner">
             <StepInfo step={current} stepIndex={stepIndex} stepCount={steps.length} />
-          </div>
-
-          <div className="panelInner">
-            <div className="panelTitle">
-              <h2>Frequências</h2>
-              <span className="muted2">
-                {current?.frequencies ? `${Object.keys(current.frequencies).length} símbolos` : '—'}
-              </span>
-            </div>
-            <FrequencyView frequencies={current?.frequencies || null} />
           </div>
 
           <div className="panelInner">

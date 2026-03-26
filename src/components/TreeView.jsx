@@ -136,11 +136,16 @@ export default function TreeView({ nodesById, rootId, forestIds, highlightIds })
     )
   }
 
+  const vbW = Math.max(width, 520)
+  const vbH = Math.max(height, 260)
+
   return (
     <div className="treeWrap fadeIn">
       <svg
         className="treeSvg"
-        viewBox={`0 0 ${Math.max(width, 520)} ${Math.max(height, 260)}`}
+        viewBox={`0 0 ${vbW} ${vbH}`}
+        preserveAspectRatio="xMidYMin meet"
+        style={{ aspectRatio: `${vbW} / ${vbH}` }}
         role="img"
         aria-label="Árvore de Huffman"
       >
