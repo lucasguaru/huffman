@@ -1,6 +1,9 @@
 import './StepInfo.css'
+import { useI18n } from '../i18n/useI18n.js'
 
 export default function StepInfo({ step, stepIndex, stepCount }) {
+  const { t } = useI18n()
+
   if (!step) {
     return (
       <div className="stepInfo fadeIn">
@@ -8,10 +11,11 @@ export default function StepInfo({ step, stepIndex, stepCount }) {
           <div className="stepLine">
             <div className="stepBadge">—</div>
           </div>
-          <div className="stepTitle">Pronto para começar</div>
+          <div className="stepTitle">{t('stepInfo.ready')}</div>
         </div>
         <div className="stepDesc">
-          Digite um texto e clique em <span className="mono">Gerar animação</span>.
+          {t('stepInfo.readyDesc')}{' '}
+          <span className="mono">{t('stepInfo.readyBtn')}</span>.
         </div>
       </div>
     )
@@ -25,7 +29,7 @@ export default function StepInfo({ step, stepIndex, stepCount }) {
             {stepCount ? `${stepIndex + 1}/${stepCount}` : '—'}
           </div>
           {step.kind && (
-            <span className="stepKind mono" title="Tipo de etapa">
+            <span className="stepKind mono" title={t('stepInfo.stepKindTitle')}>
               {step.kind}
             </span>
           )}
@@ -36,4 +40,3 @@ export default function StepInfo({ step, stepIndex, stepCount }) {
     </div>
   )
 }
-

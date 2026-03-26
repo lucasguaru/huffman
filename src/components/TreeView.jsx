@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import './TreeView.css'
+import { useI18n } from '../i18n/useI18n.js'
 import { printableChar } from '../lib/huffman.js'
 
 /**
@@ -68,7 +69,7 @@ function layoutTree(nodesById, rootId, levelGapY = LEVEL_GAP_Y) {
 
   let maxDepth = 0
   let maxX = 0
-  for (const [id, pos] of positions.entries()) {
+  for (const [, pos] of positions.entries()) {
     maxDepth = Math.max(maxDepth, pos.y)
     maxX = Math.max(maxX, pos.x)
   }
@@ -152,6 +153,7 @@ export default function TreeView({
   highlightIds,
   pathEdges = null,
 }) {
+  const { t } = useI18n()
   const { nodes, edges, width, height } = useMemo(
     () => layoutForest(nodesById || {}, rootId, forestIds, LEVEL_GAP_Y),
     [nodesById, rootId, forestIds],
@@ -175,7 +177,7 @@ export default function TreeView({
   if (!rootId && (!forestIds || forestIds.length === 0)) {
     return (
       <div className="treeEmpty">
-        <div className="muted2">A árvore vai surgindo conforme os nós são combinados.</div>
+        <div className="muted2">{t('tree.empty')}</div>
       </div>
     )
   }
@@ -194,7 +196,7 @@ export default function TreeView({
         viewBox={`0 0 ${vbW} ${vbH}`}
         preserveAspectRatio="xMinYMin meet"
         role="img"
-        aria-label="Árvore de Huffman"
+        aria-label={t('tree.aria')}
       >
         <defs>
           <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">

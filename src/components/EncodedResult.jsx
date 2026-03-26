@@ -1,4 +1,5 @@
 import './EncodedResult.css'
+import { useI18n } from '../i18n/useI18n.js'
 
 function prefixBits(text, codes, lastInclusiveIdx) {
   if (!text || !codes || lastInclusiveIdx < 0) return ''
@@ -13,11 +14,10 @@ export default function EncodedResult({
   codes = null,
   encodedText,
   bitsSummary,
-  /** Índice do caractere do texto original em destaque (passo a passo da codificação) */
   encodeCharIndex = null,
-  /** Se true, mostra estatísticas de bits (só no último passo) */
   showStats = false,
 }) {
+  const { t } = useI18n()
   const hasBits = encodedText != null && encodedText !== ''
 
   const encodedBitsParts =
@@ -37,13 +37,13 @@ export default function EncodedResult({
       : null
 
   if (!hasBits && encodeCharIndex == null) {
-    return <div className="muted2">O texto codificado aparece ao montar o resultado.</div>
+    return <div className="muted2">{t('encoded.empty')}</div>
   }
 
   return (
     <div className="encodedWrap fadeIn">
       <div className="encodedBlock">
-        <div className="encodedLabel">Texto original</div>
+        <div className="encodedLabel">{t('encoded.original')}</div>
         <div className="encodedText mono encodedTextPick">
           {Array.from(text || '').map((ch, i) => (
             <span
@@ -57,7 +57,7 @@ export default function EncodedResult({
       </div>
 
       <div className="encodedBlock">
-        <div className="encodedLabel">Texto codificado (bits)</div>
+        <div className="encodedLabel">{t('encoded.bits')}</div>
         <div className="encodedBits mono">
           {!hasBits ? (
             '—'
@@ -77,19 +77,19 @@ export default function EncodedResult({
       {showStats && bitsSummary && (
         <div className="encodedStats">
           <div className="stat">
-            <div className="statK">Chars</div>
+            <div className="statK">{t('encoded.statsChars')}</div>
             <div className="statV mono">{bitsSummary.n}</div>
           </div>
           <div className="stat">
-            <div className="statK">Símbolos</div>
+            <div className="statK">{t('encoded.symbols')}</div>
             <div className="statV mono">{bitsSummary.unique}</div>
           </div>
           <div className="stat">
-            <div className="statK">Antes (ASCII)</div>
+            <div className="statK">{t('encoded.beforeAscii')}</div>
             <div className="statV mono">{bitsSummary.asciiBits} bits</div>
           </div>
           <div className="stat">
-            <div className="statK">Depois (Huffman)</div>
+            <div className="statK">{t('encoded.afterHuffman')}</div>
             <div className="statV mono">{bitsSummary.huffmanBits} bits</div>
           </div>
         </div>

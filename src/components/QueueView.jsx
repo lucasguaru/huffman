@@ -1,4 +1,5 @@
 import './QueueView.css'
+import { useI18n } from '../i18n/useI18n.js'
 import { printableChar } from '../lib/huffman.js'
 
 function labelFor(node) {
@@ -7,8 +8,9 @@ function labelFor(node) {
 }
 
 export default function QueueView({ queue, selectedIds, createdId }) {
+  const { t } = useI18n()
   if (!queue?.length) {
-    return <div className="muted2">A fila aparecerá aqui durante a execução.</div>
+    return <div className="muted2">{t('queue.empty')}</div>
   }
 
   const selected = new Set(selectedIds || [])
@@ -27,12 +29,12 @@ export default function QueueView({ queue, selectedIds, createdId }) {
           <div key={n.id} className={classes.join(' ')}>
             <div className="queueTop">
               <div className="queueBadge mono">{idx + 1}</div>
-              <div className="queueLabel mono" title={n.char ?? 'nó interno'}>
+              <div className="queueLabel mono" title={n.char ?? t('queue.internal')}>
                 {labelFor(n)}
               </div>
             </div>
             <div className="queueFreq">
-              <span className="muted2">freq.</span>{' '}
+              <span className="muted2">{t('queue.freq')}</span>{' '}
               <span className="mono">{n.freq}</span>
             </div>
           </div>

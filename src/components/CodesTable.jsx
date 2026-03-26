@@ -1,8 +1,11 @@
 import './CodesTable.css'
+import { useI18n } from '../i18n/useI18n.js'
 
 export default function CodesTable({ frequencies, codes, printableChar, highlightChar }) {
+  const { t } = useI18n()
+
   if (!codes || !frequencies) {
-    return <div className="muted2">Os códigos aparecem quando a árvore estiver pronta.</div>
+    return <div className="muted2">{t('codesTable.empty')}</div>
   }
 
   const rows = Object.keys(codes)
@@ -22,9 +25,9 @@ export default function CodesTable({ frequencies, codes, printableChar, highligh
       <table className="codesTable">
         <thead>
           <tr>
-            <th>Caractere</th>
-            <th>Frequência</th>
-            <th>Código</th>
+            <th>{t('codesTable.char')}</th>
+            <th>{t('codesTable.freq')}</th>
+            <th>{t('codesTable.code')}</th>
           </tr>
         </thead>
         <tbody>
@@ -43,4 +46,3 @@ export default function CodesTable({ frequencies, codes, printableChar, highligh
     </div>
   )
 }
-

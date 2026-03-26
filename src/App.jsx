@@ -12,6 +12,8 @@ import QueueView from './components/QueueView.jsx'
 import TreeView from './components/TreeView.jsx'
 import CodesTable from './components/CodesTable.jsx'
 import EncodedResult from './components/EncodedResult.jsx'
+import { useI18n } from './i18n/useI18n.js'
+import { LOCALE_LABELS, SUPPORTED_LOCALES } from './i18n/messages.js'
 
 const INPUT_STORAGE_KEY = 'huffman-visual-lab-input'
 
@@ -32,6 +34,7 @@ function buildEncodedPrefix(text, codes, idx) {
 }
 
 function App() {
+  const { locale, setLocale, t } = useI18n()
   const [text, setText] = useState(() => readStoredInput())
   const [steps, setSteps] = useState([])
   const [stepIndex, setStepIndex] = useState(0)
@@ -41,6 +44,11 @@ function App() {
   const [encodeIndex, setEncodeIndex] = useState(0)
   const playTimer = useRef(null)
   const prevKindRef = useRef(null)
+
+  function changeLocale(/** @type {'pt-BR' | 'en'} */ next) {
+    setLocale(next)
+    setSteps((prev) => (prev.length === 0 ? prev : buildHuffmanSteps(text, next).steps))
+  }
 
   const current = steps[stepIndex] || null
   const stepResult = current?.result ?? null
@@ -53,6 +61,7 @@ function App() {
     }
   }, [text])
 
+  /* eslint-disable react-hooks/set-state-in-effect -- keep code-tour / encode indices in sync when step kind changes */
   useEffect(() => {
     const kind = current?.kind
     if (kind === 'codes' && stepResult?.codes) {
@@ -75,9 +84,10 @@ function App() {
     }
     prevKindRef.current = kind
   }, [stepIndex, current?.kind, stepResult])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function generate() {
-    const built = buildHuffmanSteps(text)
+    const built = buildHuffmanSteps(text, locale)
     setSteps(built.steps)
     setStepIndex(0)
     setIsPlaying(false)
@@ -209,10 +219,12 @@ function App() {
     }
   }, [isPlaying, speed, steps.length, canPlay])
 
+  /* eslint-disable react-hooks/set-state-in-effect -- stop auto-play when reaching the last step */
   useEffect(() => {
     if (!isPlaying) return
     if (stepIndex >= steps.length - 1) setIsPlaying(false)
   }, [isPlaying, stepIndex, steps.length])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const hideQueueSection =
     current && ['tree', 'codes', 'done'].includes(current.kind)
@@ -273,15 +285,28 @@ function App() {
     <div className="container">
       <header className="appHeader">
         <div className="brand">
-          <h1 className="brandTitle">Huffman Visual Lab</h1>
-          <p className="brandSubtitle">
-            Visualização didática, passo a passo, do algoritmo de Huffman.
-          </p>
+          <h1 className="brandTitle">{t('app.title')}</h1>
+          <p className="brandSubtitle">{t('app.subtitle')}</p>
         </div>
-        <div className="pill">
-          <span className="muted2">Dica</span>
-          <span className="kbd">Enter</span>
-          <span className="muted2">gera a animação</span>
+        <div className="appHeaderRight">
+          <div className="langSwitcher" role="group" aria-label={t('app.langAria')}>
+            {SUPPORTED_LOCALES.map((loc) => (
+              <button
+                key={loc}
+                type="button"
+                className={`langBtn ${locale === loc ? 'isActive' : ''}`}
+                onClick={() => changeLocale(loc)}
+                aria-pressed={locale === loc}
+              >
+                {LOCALE_LABELS[loc]}
+              </button>
+            ))}
+          </div>
+          <div className="pill">
+            <span className="muted2">{t('app.tip')}</span>
+            <span className="kbd">Enter</span>
+            <span className="muted2">{t('app.tipEnter')}</span>
+          </div>
         </div>
       </header>
 
@@ -314,9 +339,9 @@ function App() {
           {!hideQueueSection && (
             <div className="panelInner">
               <div className="panelTitle">
-                <h2>Fila / Floresta atual</h2>
+                <h2>{t('panel.queueForest')}</h2>
                 <span className="muted2">
-                  {current?.queue ? `${current.queue.length} nós` : '—'}
+                  {current?.queue ? `${current.queue.length} ${t('panel.nodes')}` : '—'}
                 </span>
               </div>
               <QueueView
@@ -332,9 +357,9 @@ function App() {
           {showTreeSection && (
             <div className="panelInner">
               <div className="panelTitle">
-                <h2>Árvore de Huffman</h2>
+                <h2>{t('panel.tree')}</h2>
                 <span className="muted2">
-                  {current?.rootId ? `raiz: ${current.rootId}` : '—'}
+                  {current?.rootId ? `${t('panel.root')}: ${current.rootId}` : '—'}
                 </span>
               </div>
               <TreeView
@@ -350,9 +375,11 @@ function App() {
           {showCodesTableSection && (
             <div className="panelInner">
               <div className="panelTitle">
-                <h2>Códigos</h2>
+                <h2>{t('panel.codes')}</h2>
                 <span className="muted2">
-                  {stepResult?.codes ? `${Object.keys(stepResult.codes).length} códigos` : '—'}
+                  {stepResult?.codes
+                    ? `${Object.keys(stepResult.codes).length} ${t('panel.codesCount')}`
+                    : '—'}
                 </span>
               </div>
               <CodesTable
@@ -367,7 +394,7 @@ function App() {
           {showResultSection && (
             <div className="panelInner">
               <div className="panelTitle">
-                <h2>Resultado</h2>
+                <h2>{t('panel.result')}</h2>
                 <span className="muted2">
                   {stepResult?.encodedText ? `${encodeIndex + 1}/${stepResult.text.length}` : '—'}
                 </span>

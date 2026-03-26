@@ -1,3 +1,5 @@
+import { stepCopy } from '../i18n/messages.js'
+
 function makeId(prefix, n) {
   return `${prefix}_${n}`
 }
@@ -141,10 +143,12 @@ export function summarizeBits(result) {
  * - rootId (quando existir)
  * - nodesById (para desenhar árvore)
  * - title/description/kind (texto didático)
+ * @param {string} [locale='pt-BR'] idioma para títulos/descrições (pt-BR | en)
  */
-export function buildHuffmanSteps(text) {
+export function buildHuffmanSteps(text, locale = 'pt-BR') {
   const steps = []
   const safeText = String(text ?? '')
+  const sc = (id) => stepCopy(locale, id)
 
   const frequencies = countFrequencies(safeText)
   const freqEntries = sortedEntriesByFreq(frequencies)
@@ -163,9 +167,7 @@ export function buildHuffmanSteps(text) {
   steps.push(
     snapshot(nodesById, leaves, [], null, null, {
       kind: 'frequencies',
-      title: '1) Contar frequências',
-      description:
-        'Primeiro, contamos quantas vezes cada caractere aparece no texto. Isso vira o peso de cada folha.',
+      ...sc('frequencies'),
       frequencies,
       text: safeText,
     }),
@@ -176,9 +178,7 @@ export function buildHuffmanSteps(text) {
   steps.push(
     snapshot(nodesById, queue, [], null, null, {
       kind: 'queue',
-      title: '2) Ordenar nós pela menor frequência',
-      description:
-        'Colocamos as folhas em uma fila de prioridade (menor frequência primeiro).',
+      ...sc('queue'),
       frequencies,
       text: safeText,
     }),
@@ -188,8 +188,7 @@ export function buildHuffmanSteps(text) {
   if (safeText.length === 0) {
     steps.push({
       kind: 'done',
-      title: 'Resultado',
-      description: 'Digite algum texto para visualizar o algoritmo.',
+      ...sc('doneEmpty'),
       frequencies,
       queue: [],
       selectedIds: [],
@@ -209,9 +208,7 @@ export function buildHuffmanSteps(text) {
     steps.push(
       snapshot(nodesById, queue, [root.id], null, root.id, {
         kind: 'single',
-        title: 'Caso especial: um único caractere',
-        description:
-          'Quando só existe um símbolo, a árvore tem apenas uma folha. Por convenção didática, usamos o código 0.',
+        ...sc('single'),
         frequencies,
         text: safeText,
         result: { text: safeText, frequencies, codes, encodedText, rootId: root.id },
@@ -220,8 +217,7 @@ export function buildHuffmanSteps(text) {
     steps.push(
       snapshot(nodesById, queue, [], null, root.id, {
         kind: 'done',
-        title: 'Resultado final',
-        description: 'Códigos gerados e texto codificado.',
+        ...sc('doneSingle'),
         frequencies,
         text: safeText,
         result: { text: safeText, frequencies, codes, encodedText, rootId: root.id },
@@ -239,9 +235,7 @@ export function buildHuffmanSteps(text) {
     steps.push(
       snapshot(nodesById, queue, [a.id, b.id], null, null, {
         kind: 'pick',
-        title: '3) Selecionar os dois menores',
-        description:
-          'Escolhemos os dois nós de menor frequência. Eles serão combinados em um novo nó pai.',
+        ...sc('pick'),
         frequencies,
         text: safeText,
       }),
@@ -264,9 +258,7 @@ export function buildHuffmanSteps(text) {
     steps.push(
       snapshot(nodesById, queue, [], { id: parentId, left: a.id, right: b.id }, null, {
         kind: 'merge',
-        title: '4) Combinar e criar um nó pai',
-        description:
-          'Criamos um nó interno cujo peso é a soma dos pesos dos dois nós escolhidos. Esse nó volta para a fila.',
+        ...sc('merge'),
         frequencies,
         text: safeText,
       }),
@@ -278,9 +270,7 @@ export function buildHuffmanSteps(text) {
   steps.push(
     snapshot(nodesById, queue, [], null, rootId, {
       kind: 'tree',
-      title: '5) Árvore final pronta',
-      description:
-        'Repetimos até sobrar apenas um nó. Ele é a raiz da árvore binária de Huffman.',
+      ...sc('tree'),
       frequencies,
       text: safeText,
     }),
@@ -292,9 +282,7 @@ export function buildHuffmanSteps(text) {
   steps.push(
     snapshot(nodesById, queue, [], null, rootId, {
       kind: 'codes',
-      title: '6) Gerar códigos binários',
-      description:
-        'Percorremos a árvore: esquerda é 0, direita é 1. O caminho da raiz até cada folha vira o código do caractere.',
+      ...sc('codes'),
       frequencies,
       text: safeText,
       result: { text: safeText, frequencies, codes, encodedText, rootId },
@@ -304,9 +292,7 @@ export function buildHuffmanSteps(text) {
   steps.push(
     snapshot(nodesById, queue, [], null, rootId, {
       kind: 'done',
-      title: '7) Texto codificado',
-      description:
-        'Substituímos cada caractere pelo seu código e obtemos a sequência final de bits.',
+      ...sc('done'),
       frequencies,
       text: safeText,
       result: { text: safeText, frequencies, codes, encodedText, rootId },

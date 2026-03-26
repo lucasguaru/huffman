@@ -1,0 +1,31 @@
+.btnNavStack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 5.5rem;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.btnNavMain {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.2;
+}
+
+.btnNavKey {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.45);
+  line-height: 1.1;
+}
+
+.btn[disabled] .btnNavKey {
+  opacity: 0.4;
+}
