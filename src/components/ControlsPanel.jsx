@@ -23,10 +23,6 @@ export default function ControlsPanel({
         e.preventDefault()
         onGenerate()
       }
-      if (e.key === ' ') {
-        e.preventDefault()
-        if (stepCount > 0) setIsPlaying((v) => !v)
-      }
       if (e.key === 'ArrowRight') {
         if (canNext) onNext()
       }
@@ -36,7 +32,7 @@ export default function ControlsPanel({
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [onGenerate, setIsPlaying, stepCount, canNext, canPrev, onNext, onPrev])
+  }, [onGenerate, canNext, canPrev, onNext, onPrev])
 
   return (
     <div>

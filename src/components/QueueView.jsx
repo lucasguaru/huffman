@@ -14,7 +14,8 @@ export default function QueueView({ queue, selectedIds, createdId }) {
   const selected = new Set(selectedIds || [])
 
   return (
-    <div className="queueRow">
+    <div className="queueScroll">
+      <div className="queueRow">
       {queue.map((n, idx) => {
         const isSelected = selected.has(n.id)
         const isCreated = createdId === n.id
@@ -37,6 +38,7 @@ export default function QueueView({ queue, selectedIds, createdId }) {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }

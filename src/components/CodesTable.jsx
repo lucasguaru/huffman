@@ -1,6 +1,6 @@
 import './CodesTable.css'
 
-export default function CodesTable({ frequencies, codes, printableChar }) {
+export default function CodesTable({ frequencies, codes, printableChar, highlightChar }) {
   if (!codes || !frequencies) {
     return <div className="muted2">Os códigos aparecem quando a árvore estiver pronta.</div>
   }
@@ -29,7 +29,10 @@ export default function CodesTable({ frequencies, codes, printableChar }) {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.ch}>
+            <tr
+              key={r.ch}
+              className={highlightChar != null && r.ch === highlightChar ? 'codesRowActive' : undefined}
+            >
               <td className="mono">{printableChar(r.ch)}</td>
               <td className="mono">{r.freq}</td>
               <td className="mono codeCell">{r.code}</td>

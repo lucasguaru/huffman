@@ -92,6 +92,36 @@ function encodeText(text, codes) {
   return out
 }
 
+/** Arestas da raiz até a folha do caractere (ordem topo → folha), para destacar o caminho no SVG */
+export function findPathToChar(nodesById, rootId, ch) {
+  const edges = []
+  function dfs(id) {
+    const n = nodesById[id]
+    if (!n) return false
+    if (n.char === ch) return true
+    if (n.left) {
+      if (dfs(n.left)) {
+        edges.unshift({ from: id, to: n.left, bit: '0' })
+        return true
+      }
+    }
+    if (n.right) {
+      if (dfs(n.right)) {
+        edges.unshift({ from: id, to: n.right, bit: '1' })
+        return true
+      }
+    }
+    return false
+  }
+  if (rootId) dfs(rootId)
+  return edges
+}
+
+export function sortedCodeChars(codes) {
+  if (!codes) return []
+  return Object.keys(codes).sort((a, b) => a.localeCompare(b))
+}
+
 export function summarizeBits(result) {
   const n = result?.text?.length || 0
   const unique = Object.keys(result?.frequencies || {}).length

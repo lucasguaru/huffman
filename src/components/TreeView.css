@@ -1,17 +1,17 @@
+/* Escala 1:1 no SVG: bolinhas têm tamanho fixo em px; rolagem só aqui se a árvore for larga */
 .treeWrap {
   width: 100%;
+  min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.62);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-/* Altura vem do aspect-ratio (viewBox) — evita encolher círculos quando a árvore ganha níveis */
 .treeSvg {
-  width: 100%;
-  height: auto;
-  max-width: 100%;
   display: block;
+  max-width: none;
   vertical-align: top;
 }
 
@@ -28,15 +28,30 @@
   stroke-width: 1.6;
 }
 
+.treeEdge.isPath {
+  stroke: rgba(37, 99, 235, 0.85);
+  stroke-width: 2.4;
+}
+
 .treeBitPill {
   fill: rgba(255, 255, 255, 0.92);
   stroke: rgba(15, 23, 42, 0.16);
+}
+
+.treeBitPill.isPath {
+  fill: rgba(37, 99, 235, 0.18);
+  stroke: rgba(37, 99, 235, 0.55);
 }
 
 .treeBitText {
   font-family: var(--mono);
   font-size: 12px;
   fill: rgba(15, 23, 42, 0.78);
+}
+
+.treeBitText.isPath {
+  fill: rgba(30, 64, 175, 0.95);
+  font-weight: 800;
 }
 
 .treeCircle {
@@ -65,6 +80,12 @@
   stroke: rgba(245, 158, 11, 0.9);
   stroke-width: 2.4px;
   fill: rgba(245, 158, 11, 0.14);
+}
+
+.treeNode.isPath .treeCircle {
+  stroke: rgba(37, 99, 235, 0.75);
+  stroke-width: 2.2px;
+  fill: rgba(37, 99, 235, 0.12);
 }
 
 .treeNode.isSelected .treeMain,
